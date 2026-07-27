@@ -60,7 +60,8 @@ export default function HomePage() {
   const { data: clients = [] } = useQuery({ queryKey: ["clients"], queryFn: ClientService.list });
   const { data: referrals = [] } = useQuery({ queryKey: ["referrals"], queryFn: WorkflowService.referrals });
   const { data: plans = [] } = useQuery({ queryKey: ["plans"], queryFn: WorkflowService.plans });
-  const { data: integrations = [] } = useQuery({ queryKey: ["integration-health"], queryFn: GovernanceService.integrationHealth });
+  const { data: integrationsRaw = [] } = useQuery({ queryKey: ["integration-health"], queryFn: GovernanceService.integrationHealth });
+  const integrations = integrationsRaw.map((i) => ({ ...i, id: i.name }));
 
   const scoped = scopeWork(work, personaId, persona.name);
   const open = scoped.filter((w) => w.status !== "Complete");
