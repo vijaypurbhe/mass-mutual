@@ -1,0 +1,236 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --background: 220 14% 96%;
+    --foreground: 220 20% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 12%;
+
+    --primary: 195 100% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 90%;
+    --secondary-foreground: 220 20% 20%;
+
+    --muted: 220 14% 92%;
+    --muted-foreground: 215 15% 45%;
+
+    --accent: 195 80% 35%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --warning: 38 95% 50%;
+    --warning-foreground: 220 20% 6%;
+
+    --success: 152 70% 38%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 220 14% 86%;
+    --input: 220 14% 86%;
+    --ring: 195 100% 40%;
+
+    --radius: 0.75rem;
+
+    --chart-1: 195 100% 40%;
+    --chart-2: 152 70% 38%;
+    --chart-3: 38 95% 50%;
+    --chart-4: 280 70% 55%;
+    --chart-5: 0 72% 51%;
+
+    --sidebar-background: 220 14% 94%;
+    --sidebar-foreground: 220 20% 20%;
+    --sidebar-primary: 195 100% 40%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 90%;
+    --sidebar-accent-foreground: 220 20% 20%;
+    --sidebar-border: 220 14% 86%;
+    --sidebar-ring: 195 100% 40%;
+
+    --glass: 0 0% 100% / 0.7;
+    --glass-border: 220 14% 86%;
+    --glow-primary: 195 100% 40% / 0.1;
+    --glow-warning: 38 95% 50% / 0.1;
+    --glow-success: 152 70% 38% / 0.1;
+
+    /* Mazda brand accents */
+    --soul-red: 358 75% 42%;
+    --soul-red-glow: 358 80% 50%;
+    --slds-brand-dark: 213 90% 19%;
+  }
+
+  .dark {
+    --background: 220 20% 6%;
+    --foreground: 210 20% 92%;
+
+    --card: 220 18% 10%;
+    --card-foreground: 210 20% 92%;
+
+    --popover: 220 18% 10%;
+    --popover-foreground: 210 20% 92%;
+
+    --primary: 195 100% 50%;
+    --primary-foreground: 220 20% 6%;
+
+    --secondary: 220 16% 16%;
+    --secondary-foreground: 210 20% 85%;
+
+    --muted: 220 14% 14%;
+    --muted-foreground: 215 15% 55%;
+
+    --accent: 195 80% 40%;
+    --accent-foreground: 210 20% 95%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+
+    --warning: 38 95% 55%;
+    --warning-foreground: 220 20% 6%;
+
+    --success: 152 70% 45%;
+    --success-foreground: 220 20% 6%;
+
+    --border: 220 16% 18%;
+    --input: 220 16% 18%;
+    --ring: 195 100% 50%;
+
+    --chart-1: 195 100% 50%;
+    --chart-2: 152 70% 45%;
+    --chart-3: 38 95% 55%;
+    --chart-4: 280 70% 60%;
+    --chart-5: 0 72% 51%;
+
+    --sidebar-background: 220 20% 8%;
+    --sidebar-foreground: 210 20% 85%;
+    --sidebar-primary: 195 100% 50%;
+    --sidebar-primary-foreground: 220 20% 6%;
+    --sidebar-accent: 220 16% 14%;
+    --sidebar-accent-foreground: 210 20% 85%;
+    --sidebar-border: 220 16% 16%;
+    --sidebar-ring: 195 100% 50%;
+
+    --glass: 220 18% 10% / 0.6;
+    --glass-border: 220 16% 22%;
+    --glow-primary: 195 100% 50% / 0.15;
+    --glow-warning: 38 95% 55% / 0.15;
+    --glow-success: 152 70% 45% / 0.15;
+
+    --soul-red: 358 75% 50%;
+    --soul-red-glow: 358 80% 58%;
+    --slds-brand-dark: 213 90% 12%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+@layer utilities {
+  .font-mono-data {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Mazda demo — SLDS-ish utilities */
+  .hairline { border-color: hsl(var(--border)); }
+  .bg-soul-red { background-color: hsl(var(--soul-red)); }
+  .text-soul { color: hsl(var(--soul-red)); }
+  .border-soul { border-color: hsl(var(--soul-red)); }
+  .bg-gradient-soul {
+    background-image: linear-gradient(135deg, hsl(var(--soul-red)), hsl(var(--soul-red-glow)));
+  }
+  .shadow-soul { box-shadow: 0 1px 2px hsl(0 0% 0% / 0.05); }
+  .shadow-card {
+    box-shadow: 0 1px 0 hsl(0 0% 0% / 0.04), 0 0 0 1px hsl(var(--border));
+  }
+
+  .glass-card {
+    @apply bg-card/60 backdrop-blur-xl border border-border/50 rounded-xl;
+  }
+
+  .dark .glass-card {
+    @apply bg-card/60;
+  }
+
+  .glass-card-hover {
+    @apply glass-card transition-all duration-300;
+  }
+
+  .glass-card-hover:hover {
+    border-color: hsl(var(--primary) / 0.3);
+    box-shadow: 0 0 30px hsl(var(--glow-primary));
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 20px hsl(var(--glow-primary)), 0 0 60px hsl(var(--glow-primary));
+  }
+
+  .glow-warning {
+    box-shadow: 0 0 20px hsl(var(--glow-warning));
+  }
+
+  .glow-success {
+    box-shadow: 0 0 20px hsl(var(--glow-success));
+  }
+
+  .text-gradient-primary {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(195 80% 70%));
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-stream {
+    animation: stream 2s ease-in-out infinite;
+  }
+
+  @keyframes stream {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out forwards;
+  }
+
+  @keyframes countUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-count-up {
+    animation: countUp 0.6s ease-out forwards;
+  }
+
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out forwards;
+  }
+}
