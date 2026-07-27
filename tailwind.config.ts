@@ -71,9 +71,18 @@ export default {
         },
       },
       borderRadius: {
+        "2xl": "calc(var(--radius) + 8px)",
+        xl: "calc(var(--radius) + 4px)",
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        md: "calc(var(--radius) - 4px)",
+        sm: "calc(var(--radius) - 6px)",
+      },
+      boxShadow: {
+        glass: "var(--shadow-glass)",
+        float: "var(--shadow-float)",
+      },
+      backdropBlur: {
+        xs: "4px",
       },
       keyframes: {
         "accordion-down": {
@@ -84,10 +93,30 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "fade-in": {
+          from: { opacity: "0", transform: "translateY(6px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "scale-in": {
+          from: { opacity: "0", transform: "scale(0.97)" },
+          to: { opacity: "1", transform: "scale(1)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translate3d(0,0,0) scale(1)" },
+          "50%": { transform: "translate3d(0,-18px,0) scale(1.04)" },
+        },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in": "fade-in 0.35s cubic-bezier(0.22, 1, 0.36, 1)",
+        "scale-in": "scale-in 0.25s cubic-bezier(0.22, 1, 0.36, 1)",
+        float: "float 14s ease-in-out infinite",
+        shimmer: "shimmer 2.4s linear infinite",
       },
     },
   },
