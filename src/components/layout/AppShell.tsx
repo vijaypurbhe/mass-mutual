@@ -243,7 +243,7 @@ function ShellInner() {
 
       <InteractionBar />
 
-      <div className="flex min-h-0 flex-1">
+      <div className="relative z-10 flex min-h-0 flex-1">
         <nav
           className={cn(
             "glass z-20 flex shrink-0 flex-col rounded-none border-y-0 border-l-0 transition-all duration-300 ease-out",
@@ -299,7 +299,7 @@ function ShellInner() {
           </div>
         </nav>
 
-        <main id="main-content" className="min-w-0 flex-1 overflow-y-auto px-6 py-6">
+        <main id="main-content" className="relative z-10 min-w-0 flex-1 overflow-y-auto px-6 py-6">
           <div className="mx-auto max-w-[1600px] animate-fade-in">
             <Outlet />
           </div>
