@@ -11,30 +11,44 @@ export default function Login() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4 py-10">
-      <div className="w-full max-w-3xl">
-        <div className="mb-6 text-center">
-          <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded bg-primary text-sm font-bold text-primary-foreground">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-12">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute -left-32 top-0 h-[32rem] w-[32rem] rounded-full bg-primary/25 blur-[130px] animate-float" />
+        <div className="absolute -right-24 bottom-0 h-[30rem] w-[30rem] rounded-full bg-[hsl(var(--primary-glow)/0.22)] blur-[140px] animate-float [animation-delay:-7s]" />
+      </div>
+
+      <div className="w-full max-w-3xl animate-scale-in">
+        <div className="mb-7 text-center">
+          <span className="brand-gradient mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-bold text-primary-foreground shadow-float">
             UF
           </span>
-          <h1 className="text-2xl font-semibold text-foreground">Unified Financial Services Engagement Hub</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            A single workspace across insurance, wealth and service operations. Choose a demonstration persona to enter.
+          <p className="glass mx-auto mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Headless360 architecture
+          </p>
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+            Unified Financial Services <span className="brand-text">Engagement Hub</span>
+          </h1>
+          <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
+            A single composable workspace across insurance, wealth and service operations — powered by Salesforce data.
+            Choose a demonstration persona to enter.
           </p>
         </div>
 
-        <div className="surface-panel p-5">
+        <div className="surface-panel p-6 shadow-float">
           <fieldset>
             <legend className="mb-3 text-sm font-semibold text-foreground">Demonstration personas</legend>
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid gap-2.5 sm:grid-cols-2">
               {personas.map((p) => (
                 <label
                   key={p.id}
                   className={cn(
-                    "flex cursor-pointer gap-3 rounded border p-3 transition-colors",
-                    selected === p.id ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50",
+                    "flex cursor-pointer gap-3 rounded-xl border p-3.5 transition-all duration-200",
+                    selected === p.id
+                      ? "border-primary/40 bg-primary/[0.08] shadow-glass ring-1 ring-primary/20"
+                      : "border-border/70 bg-foreground/[0.02] hover:-translate-y-0.5 hover:bg-foreground/[0.05]",
                   )}
                 >
+
                   <input
                     type="radio"
                     name="persona"
