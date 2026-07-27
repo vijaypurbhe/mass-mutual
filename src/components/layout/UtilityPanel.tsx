@@ -110,7 +110,7 @@ function CopilotPanel({ contextText, contextLabel }: { contextText: string; cont
                 <button
                   key={s}
                   type="button"
-                  className="w-full rounded border border-border bg-card px-3 py-2 text-left text-sm hover:bg-muted"
+                  className="glass w-full rounded-xl px-3 py-2 text-left text-sm transition-all duration-200 hover:shadow-float"
                   onClick={() => send(s)}
                 >
                   {s}
@@ -123,7 +123,7 @@ function CopilotPanel({ contextText, contextLabel }: { contextText: string; cont
               key={i}
               className={cn(
                 "rounded border px-3 py-2 text-sm",
-                m.role === "user" ? "border-primary/30 bg-primary/5" : "border-border bg-card",
+                m.role === "user" ? "border-primary/25 bg-primary/[0.07]" : "border-border/60 bg-foreground/[0.03]",
               )}
             >
               <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -198,7 +198,7 @@ function KnowledgeTab() {
       <ScrollArea className="flex-1">
         <ul className="space-y-2 p-3">
           {filtered.slice(0, 12).map((article) => (
-            <li key={article.id} className="rounded border border-border bg-card p-3">
+            <li key={article.id} className="glass rounded-xl p-3">
               <p className="text-sm font-medium text-foreground">{article.title}</p>
               <p className="mt-1 text-xs text-muted-foreground">{article.summary}</p>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -259,7 +259,7 @@ function AuditTab() {
           <li className="text-sm text-muted-foreground">Every reveal, Copilot prompt, and submitted action in this session appears here.</li>
         )}
         {sessionAudit.map((entry) => (
-          <li key={entry.id} className="rounded border border-border bg-card p-3">
+          <li key={entry.id} className="glass rounded-xl p-3">
             <p className="text-sm font-medium text-foreground">{entry.action}</p>
             <p className="text-xs text-muted-foreground">{entry.record}</p>
             <p className="mt-1 text-xs text-muted-foreground">{entry.detail}</p>
@@ -278,7 +278,7 @@ export default function UtilityPanel({ contextText, contextLabel }: { contextTex
 
   return (
     <aside
-      className="flex h-full w-[22rem] shrink-0 flex-col border-l border-border bg-card"
+      className="glass z-20 flex h-full w-[22rem] shrink-0 flex-col rounded-none border-y-0 border-r-0"
       aria-label="Copilot and utilities"
     >
       <div className="flex items-center justify-between border-b border-border px-3 py-2">
