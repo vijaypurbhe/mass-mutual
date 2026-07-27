@@ -134,30 +134,40 @@ function ShellInner() {
   }, []);
 
   return (
-    <div className="flex h-screen w-full flex-col overflow-hidden bg-background">
+    <div className="relative flex h-screen w-full flex-col overflow-hidden bg-background">
+      {/* Ambient liquid backdrop */}
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -left-40 -top-40 h-[34rem] w-[34rem] rounded-full bg-primary/20 blur-[120px] animate-float" />
+        <div className="absolute -right-32 top-10 h-[30rem] w-[30rem] rounded-full bg-[hsl(var(--primary-glow)/0.18)] blur-[130px] animate-float [animation-delay:-5s]" />
+        <div className="absolute bottom-[-14rem] left-1/3 h-[32rem] w-[32rem] rounded-full bg-[hsl(268_62%_60%/0.14)] blur-[140px] animate-float [animation-delay:-9s]" />
+      </div>
+
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-card focus:px-3 focus:py-2">
         Skip to main content
       </a>
 
-      <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-card px-4">
-        <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded bg-primary text-xs font-bold text-primary-foreground">UF</span>
+      <header className="glass z-30 flex h-16 shrink-0 items-center gap-3 rounded-none border-x-0 border-t-0 px-4">
+        <div className="flex items-center gap-2.5">
+          <span className="brand-gradient flex h-9 w-9 items-center justify-center rounded-xl text-xs font-bold text-primary-foreground shadow-glass">
+            UF
+          </span>
           <div className="leading-tight">
-            <p className="text-sm font-semibold text-foreground">Engagement Hub</p>
-            <p className="text-xs text-muted-foreground">Unified Financial Services</p>
+            <p className="text-sm font-semibold tracking-tight text-foreground">Engagement Hub</p>
+            <p className="text-[11px] text-muted-foreground">Headless360 · Salesforce Data</p>
           </div>
         </div>
 
         <button
           type="button"
           onClick={() => setSearchOpen(true)}
-          className="ml-4 flex h-9 max-w-xl flex-1 items-center gap-2 rounded border border-border bg-background px-3 text-left text-sm text-muted-foreground transition-colors hover:border-primary/40"
+          className="glass ml-4 flex h-10 max-w-xl flex-1 items-center gap-2 rounded-full px-4 text-left text-sm text-muted-foreground transition-all duration-300 hover:shadow-float hover:ring-1 hover:ring-primary/30"
           aria-label="Open global search"
         >
           <Search className="h-4 w-4" aria-hidden="true" />
           <span className="flex-1 truncate">Search clients, policies, claims, cases…</span>
-          <kbd className="rounded border border-border px-1.5 py-0.5 text-xs">⌘K</kbd>
+          <kbd className="rounded-md border border-border/70 bg-foreground/[0.04] px-1.5 py-0.5 text-[10px] font-medium">⌘K</kbd>
         </button>
+
 
         <div className="ml-auto flex items-center gap-1.5">
           <Button variant="ghost" size="icon" className="relative h-9 w-9" aria-label={`${alerts.length} alerts`} onClick={() => navigate("/work?tab=alerts")}>
