@@ -245,36 +245,51 @@ function ShellInner() {
 
       <div className="flex min-h-0 flex-1">
         <nav
-          className={cn("flex shrink-0 flex-col border-r border-border bg-card transition-all duration-150", railCollapsed ? "w-14" : "w-60")}
+          className={cn(
+            "glass z-20 flex shrink-0 flex-col rounded-none border-y-0 border-l-0 transition-all duration-300 ease-out",
+            railCollapsed ? "w-[4.5rem]" : "w-60",
+          )}
           aria-label="Primary"
         >
-          <ul className="flex-1 space-y-0.5 p-2">
+          <ul className="flex-1 space-y-1 p-3">
             {nav.map((item) => (
               <li key={item.label}>
                 <NavLink
                   to={item.to}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-2 rounded px-2.5 py-2 text-sm transition-colors",
-                      isActive ? "bg-primary/10 font-medium text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                      "group relative flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-all duration-200",
+                      railCollapsed && "justify-center px-0",
+                      isActive
+                        ? "bg-primary/[0.12] font-semibold text-primary shadow-[inset_0_1px_0_0_hsl(var(--glass-highlight)/0.5)] ring-1 ring-primary/20"
+                        : "text-muted-foreground hover:bg-foreground/[0.05] hover:text-foreground",
                     )
                   }
                   title={railCollapsed ? item.label : undefined}
                 >
-                  <item.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  {!railCollapsed && <span className="flex-1 truncate">{item.label}</span>}
-                  {!railCollapsed && item.badgeKey && badgeCounts[item.badgeKey] > 0 && (
-                    <span className="num rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">{badgeCounts[item.badgeKey]}</span>
+                  {({ isActive }) => (
+                    <>
+                      {isActive && !railCollapsed && (
+                        <span aria-hidden="true" className="brand-gradient absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full" />
+                      )}
+                      <item.icon className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />
+                      {!railCollapsed && <span className="flex-1 truncate">{item.label}</span>}
+                      {!railCollapsed && item.badgeKey && badgeCounts[item.badgeKey] > 0 && (
+                        <span className="num rounded-full bg-foreground/[0.07] px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                          {badgeCounts[item.badgeKey]}
+                        </span>
+                      )}
+                    </>
                   )}
                 </NavLink>
               </li>
             ))}
           </ul>
-          <div className="border-t border-border p-2">
+          <div className="border-t border-border/60 p-3">
             <Button
               variant="ghost"
               size="sm"
-              className="w-full justify-start"
+              className={cn("w-full rounded-xl", railCollapsed ? "justify-center px-0" : "justify-start")}
               onClick={() => setRailCollapsed((v) => !v)}
               aria-label={railCollapsed ? "Expand navigation" : "Collapse navigation"}
             >
@@ -284,9 +299,12 @@ function ShellInner() {
           </div>
         </nav>
 
-        <main id="main-content" className="min-w-0 flex-1 overflow-y-auto bg-background px-6 py-5">
-          <Outlet />
+        <main id="main-content" className="min-w-0 flex-1 overflow-y-auto px-6 py-6">
+          <div className="mx-auto max-w-[1600px] animate-fade-in">
+            <Outlet />
+          </div>
         </main>
+
 
         {utilityOpen && <UtilityPanel contextLabel={contextLabel} contextText={contextText} />}
       </div>
