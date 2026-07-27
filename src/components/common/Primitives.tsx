@@ -120,14 +120,17 @@ export function SectionCard({
 
 export function EmptyState({ title, description, action }: { title: string; description: string; action?: ReactNode }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-2 rounded border border-dashed border-border px-6 py-10 text-center">
-      <Inbox className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
-      <p className="text-sm font-medium text-foreground">{title}</p>
+    <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-foreground/[0.015] px-6 py-12 text-center">
+      <span className="mb-1 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <Inbox className="h-5 w-5" aria-hidden="true" />
+      </span>
+      <p className="text-sm font-semibold text-foreground">{title}</p>
       <p className="max-w-md text-sm text-muted-foreground">{description}</p>
       {action}
     </div>
   );
 }
+
 
 export function ErrorState({ title = "Something went wrong", description }: { title?: string; description: string }) {
   return (
