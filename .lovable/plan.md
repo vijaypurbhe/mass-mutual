@@ -1,100 +1,76 @@
+## Goal
 
+Delete the existing Mazda / GE Vernova demo entirely and build the **Unified Financial Services Engagement Hub** in its place — same Vite + React Router + Tailwind + shadcn spine, new product from the ground up. Full breadth in one pass: all routes, all six personas, all flagship screens.
 
-# Convert Demo to Production Dashboard — Feasibility & Plan
+## Removal
 
-## Short answer
+Delete `src/pages/mazda/*`, `src/pages/Index.tsx`, `Login.tsx`, `LoginReport.tsx`, all bespoke components (`MazdaAppShell`, `AgentCard`, `KpiTile`, `RevenueChart`, `ScenarioPanel`, `GovernancePanel`, `StreamingAlerts`, etc.), `src/data/mockData.ts`, and edge functions `mazda-chat` + `agent-chat`. Keep shadcn `ui/` primitives, Tailwind config, and the Supabase client.
 
-Yes, this is fully achievable. Every tile, chart, agent, and the command center can be wired to real Salesforce Commerce Cloud (SFCC), GA4, and Agentforce data without changing the UI. The work is primarily **data integration + backend orchestration** — the React frontend stays largely as-is.
+## Design system
 
-## Architecture
+Rebuild `index.css` tokens: white/light-neutral page surfaces, deep navy nav, indigo primary, teal positive, amber warning, red critical. Inter typography, compact data-dense tables, 150–250ms motion, reduced-motion respected. No glassmorphism, no gradients, no hero sections. Dark mode retained via tokens.
+
+## Route map
 
 ```text
-┌─────────────────────────────────────────────────────────┐
-│  React Dashboard (current UI — unchanged)               │
-└──────────────┬──────────────────────────────────────────┘
-               │ React Query / SSE
-┌──────────────▼──────────────────────────────────────────┐
-│  Lovable Cloud (Supabase) — Edge Functions + Postgres   │
-│  • /api/kpis        • /api/channels    • /api/forecast  │
-│  • /api/alerts (SSE)• /api/agent-chat  • /api/scenarios │
-└──┬────────────┬───────────────┬────────────┬────────────┘
-   │            │               │            │
-   ▼            ▼               ▼            ▼
- SFCC OCAPI   GA4 Data API   Agentforce   Marketing Cloud
- (orders,    (sessions,     (Einstein    (campaigns,
-  SKUs,       conversions,   agents,      attribution)
-  carts)      attribution)   actions)
+/login                                  persona picker (mock auth)
+/home                                   role-aware home (Rep / Advisor / Manager / Back-office)
+/search                                 universal search + duplicate resolution
+/clients/:clientId                      Client 360 (flagship, 9 tabs)
+/clients/:clientId/policies/:policyId   policy detail
+/clients/:clientId/accounts/:accountId  account/portfolio detail
+/cases/:caseId                          case workbench
+/claims/:claimId                        claim workspace + stage tracker
+/work                                   6 tabs: My Work, Team Queue, Tasks, Approvals, Exceptions, Automation
+/knowledge                              federated knowledge + cited AI answers
+/documents                              virtual multi-repository document list
+/analytics                              5 dashboards (Service, Claims, CX, Advisor, AI Ops)
+/admin                                  roles, audit, integration health, AI action log
+/self-service                           customer shell (separate lighter chrome)
 ```
 
-## Data source mapping (every panel)
+## Shell
 
-| Dashboard element | Real data source | API |
-|---|---|---|
-| 8 KPI tiles (Revenue, AOV, Conversion, Sessions, etc.) | SFCC + GA4 | OCAPI Orders + GA4 `runReport` |
-| Revenue chart (90-day trend) | GA4 | GA4 `runReport` (date, totalRevenue) |
-| Channel performance table | GA4 | GA4 (sessionDefaultChannelGroup) |
-| Streaming alerts | SFCC webhooks + GA4 anomaly | Realtime channel + Edge Function |
-| Forecasting panel | Historical GA4 + ML | Lovable AI (Gemini) or BigQuery ML |
-| 5 AI agents (Revenue, Merch, Cart, Retention, Attribution) | Agentforce | Salesforce Agentforce REST API |
-| Command Center chat | Agentforce + RAG over SFCC/GA4 | Edge function w/ tool calling |
-| Customer profile (360°) | Data Cloud | Data Cloud Profile API |
-| Budget optimization | Marketing Cloud + GA4 ROAS | MC REST + GA4 |
-| Governance panel | Internal audit table | Postgres (already partially exists) |
-| Data lineage | Static config / metadata | Postgres metadata table |
+Collapsible left nav (role-aware, badge counts), top bar (global search, active-interaction indicator, notifications, help, persona switcher), right utility panel with tabs AI Copilot / Interaction Notes / Knowledge / Collaboration (resizable, drawer on mobile), Cmd+K command menu, Recently Viewed + Pinned Clients, breadcrumbs.
 
-## Implementation phases
+## Roles and auth
 
-**Phase 1 — Foundation (1-2 weeks)**
-- Connect SFCC (OAuth client credentials, OCAPI Shop/Data API)
-- Connect GA4 (service account, Data API v1)
-- Connect Agentforce (Connected App, OAuth JWT bearer flow)
-- Store credentials as Lovable Cloud secrets
-- Build connector edge functions: `sfcc-client`, `ga4-client`, `agentforce-client`
+Mock persona login — no backend auth. Persona context in React state + localStorage: Service Rep, Advisor, Back-Office, Manager, Admin/Auditor, Customer. A permission matrix drives nav items, visible tabs, action availability, unauthorized states, and field masking (masked IDs reveal only via explicit permission-aware action).
 
-**Phase 2 — KPIs & Charts (1-2 weeks)**
-- Replace `mockData.ts` with React Query hooks hitting edge functions
-- Implement caching layer (Postgres materialized tables refreshed every 15 min)
-- Wire revenue chart, channel table, KPI tiles to live queries
+## Data + service layer
 
-**Phase 3 — Agents & Command Center (2-3 weeks)**
-- Replace mock Gemini system prompts with Agentforce agent invocations
-- Implement RAG: index SFCC product catalog + GA4 reports in pgvector
-- Wire 5 agent cards to specific Agentforce agent IDs
-- Command Center: tool-calling agent with access to SFCC/GA4 query tools
+Typed models in `src/types/`: Client, Household, Policy, Account, Beneficiary, PortfolioPosition, FinancialGoal, FinancialPlan, Case, Claim, Interaction, Task, WorkflowInstance, Document, KnowledgeArticle, Referral, Alert, ConsentPreference, AuditEvent, SourceSystemReference, AIRecommendation — each with `sourceSystem`, `sourceRecordId`, `lastSyncedAt`, `dataQualityStatus`, `authoritativeSource`.
 
-**Phase 4 — Realtime & Forecasting (1-2 weeks)**
-- SFCC webhooks → Postgres → Supabase Realtime → Streaming Alerts panel
-- Forecasting: Gemini-based time-series or BigQuery ML ARIMA_PLUS
-- Scenario simulator: parameterized SAQL/SQL queries
+Seed data (fictional, realistic, includes duplicate/at-risk/incomplete scenarios): 12 clients, 6 households, 18 policies, 10 accounts, 14 cases, 8 claims, 40 interactions, 30 work items, 20 documents, 15 knowledge articles, 10 referrals, 15 alerts. Anchor client **Jordan Lee** / **Lee Family**.
 
-**Phase 5 — Production hardening (1 week)**
-- Auth: replace demo gate with real SSO (Salesforce or Google Workspace)
-- RBAC: Executive / Analyst / Admin roles using existing `user_roles` table
-- Audit logging, rate limiting, error monitoring
+Service interfaces (`ClientService`, `PolicyService`, `CaseService`, `ClaimService`, `DocumentService`, `KnowledgeService`, `InteractionService`, `WorkflowService`, `AIService`) backed by seed data with simulated latency, consumed through TanStack Query so adapters can be swapped for real APIs later.
 
-## What you'll need from Salesforce / Google
+## AI Copilot (real AI)
 
-1. **SFCC**: OCAPI client ID + secret, instance URL, site ID
-2. **GA4**: Service account JSON with Viewer access, Property ID
-3. **Agentforce**: Connected App with `api` + `agent_api` scopes, 5 deployed agent IDs
-4. **Marketing Cloud** (optional): API integration with Journey Builder access
-5. **Data Cloud** (optional): Connected App with Data Cloud Query API access
+New `ai-copilot` edge function on Lovable Cloud using the AI SDK + Lovable AI Gateway (`google/gemini-3.6-flash`), streaming. The client sends the current screen's record context; the system prompt enforces the guardrails: no legal/tax/medical/coverage/investment advice, no final decisions, citations to real seeded record IDs, confidence indicator, "review before use" notice, and explicit user confirmation before any record-creating suggested action. AI action log written into the admin view.
 
-## Key technical notes
+## Reusable components
 
-- **No frontend rewrite required** — components already accept props; only data source swaps
-- **Lovable AI Gateway** can power Command Center if Agentforce is unavailable
-- **Streaming**: Existing SSE pattern in `streamChat.ts` works directly with Agentforce streaming responses
-- **Caching is critical** — GA4 and SFCC have rate limits; cache aggregates in Postgres
-- **Cost**: Agentforce is per-conversation; budget for ~$2 per agent session at scale
+App shell, page header, metric card, client identity header, alert banner, filter bar, data table, timeline, relationship map, policy card, status badge, SLA indicator, stage tracker, activity composer, guided-flow stepper, side drawer, confirmation modal, empty / error / unauthorized states, skeleton loader, AI answer card with citations, source-system badge.
 
-## Estimated effort
+## Guided flows
 
-- **MVP (KPIs + 1 agent live)**: 3-4 weeks, 1 full-stack engineer
-- **Full production parity**: 7-9 weeks, 1 engineer + 1 Salesforce admin
-- **Enterprise hardening (SSO, audit, SLA)**: +2 weeks
+Stepper-driven, save-and-resume, Zod-validated: identity verification, contact update, beneficiary change, policy document request, claim intake, complaint escalation, financial-plan review prep. Each produces an auditable work item rather than mutating a record silently.
 
-## Deliverable on approval
+## Demo scenarios wired end-to-end
 
-A working production dashboard with the same UI, powered by real SFCC + GA4 + Agentforce data, deployed on Lovable Cloud with auth, caching, and monitoring in place.
+1. Rep authenticates a simulated call, finds Jordan Lee by masked member ID, verifies identity, opens a beneficiary-change case, completes after-call work.
+2. Claim intake from a protection policy through to the claim workspace and "Requirements requested".
+3. Advisor prepares the Lee household review via FPAS "Prepare for meeting".
+4. Manager filters SLA-at-risk work in the Command Center and bulk-reassigns with confirmation + audit event.
+5. Customer self-service: view policies, check claim status, send a secure message, update preferences.
 
+## Quality pass
+
+Strict TypeScript, WCAG 2.2 AA (keyboard nav, focus trapping/return, skip link, semantic headings, tabular alternatives for charts, no color-only status), responsive to tablet/mobile, loading/empty/error/unauthorized states everywhere, no dead primary actions. Updated `index.html` title and meta description.
+
+## Sequencing within the build
+
+Tokens + shell → persona/permissions → data model + seed + services → search → Client 360 → case + claim workspaces → work queues + guided flows → advisor/FPAS → Copilot → analytics → self-service → admin → accessibility/QA sweep.
+
+This is a large build and will run across multiple passes; each pass leaves the app in a working, navigable state.

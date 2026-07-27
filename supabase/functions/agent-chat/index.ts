@@ -1,116 +1,108 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+const MODEL = "google/gemini-3.6-flash";
 
-const agentSystemPrompts: Record<string, string> = {
-  revenue: `You are the Revenue Optimization Agent for GE Vernova's eCommerce platform (Salesforce Commerce Cloud + GA4).
-You specialize in online revenue analytics, dynamic pricing, channel mix optimization, and AOV growth.
-Current metrics: $142M quarterly revenue (+12.4%), 3.8% conversion rate, $4,280 AOV, 1.24M sessions.
-B2B portal drives 69% of revenue. Email has 8.4x ROAS. Organic search converts at 4.2%.
-Keep responses data-driven with specific numbers. Be concise but thorough.
-When presenting tabular data, ALWAYS use proper markdown tables with headers and alignment rows. Example format:
+interface Body {
+  messages?: { role: "user" | "assistant"; content: string }[];
+  persona?: string;
+  context?: string;
+}
 
-| Column 1 | Column 2 |
-| --- | --- |
-| data | data |
+const systemPrompt = (persona: string, context: string) => `
+You are the Copilot inside the Unified Financial Services Engagement Hub, an enterprise
+workspace used by insurance and wealth-management employees.
 
-Always put a blank line before and after tables.`,
+The person you are assisting is: ${persona || "a service representative"}.
 
-  merchandising: `You are the Merchandising & Catalog Agent for GE Vernova's eCommerce platform (SFCC + GA4).
-You specialize in catalog health, product enrichment, search relevancy, and Einstein product recommendations.
-Current metrics: 150K SKUs total, 78% online (117K), 33K missing/incomplete, 8,200 actively searched but not surfaced.
-Exit rate on incomplete pages is 78% vs 34% average. Each 1% catalog coverage = ~$1.2M quarterly revenue.
-Provide actionable enrichment plans with priority tiers and ROI estimates.`,
+Working context provided by the application (this is the only client data you may rely on):
+${context || "No record context has been supplied."}
 
-  cart: `You are the Cart Recovery Agent for GE Vernova's eCommerce platform (SFCC + GA4).
-You specialize in cart abandonment analysis, checkout optimization, exit-intent strategies, and recovery campaigns.
-Current metrics: 62.4% abandonment rate (-3.1pp QoQ), $88M monthly in abandoned carts.
-Top exit: shipping cost reveal at checkout step 3 (34% of exits). Other causes: account required (12%), payment issues (16%).
-Tiered free shipping could recover $29M annually. Focus on actionable SFCC checkout optimizations.`,
+Rules you must always follow:
+1. Ground every statement in the context above. If the context does not contain the answer,
+   say clearly what is missing and which system or record would hold it. Never invent
+   policy numbers, balances, dates, names, or regulatory language.
+2. Cite the record you used inline, for example "(Policy L70-882134)" or "(Case CS-10241)".
+3. You never execute transactions. When an action is appropriate, propose it as a numbered
+   recommendation and state explicitly that the employee must review and confirm it.
+4. Flag anything that requires licensed advice, suitability review, complaint handling, or
+   compliance escalation instead of answering it yourself.
+5. Do not reveal full sensitive identifiers. Refer to them in masked form.
+6. Be concise and businesslike. Prefer short paragraphs and tight bullet lists. Use Markdown.
+`.trim();
 
-  retention: `You are the Customer Retention Agent for GE Vernova's eCommerce platform (SFCC + GA4 + Marketing Cloud).
-You specialize in customer lifecycle management, churn prediction, reorder campaigns, and account health monitoring.
-Current metrics: 34.2% returning buyer rate, top 8% of accounts = 52% of revenue. 14 high-value accounts inactive 90+ days.
-Enterprise retention: 94%. New account 12-month retention: 41%. Einstein reorder reminders: 24% conversion on lapsed accounts.
-Focus on at-risk account identification and personalized re-engagement strategies.`,
-
-  marketing: `You are the Marketing Attribution Agent for GE Vernova's eCommerce platform (SFCC + GA4 + Marketing Cloud).
-You specialize in multi-touch attribution, channel ROAS, budget allocation, and campaign performance analysis.
-Current metrics: Organic Search $48.2M (undervalued 34% in last-click), Email 8.4x ROAS (highest), Paid Search 5.2x ROAS (CPCs up 22% YoY).
-GA4 data-driven attribution shows different picture than last-click. Recommend shifting 15% paid search to email nurture for +$3.8M.
-Provide attribution analysis with tables and specific budget recommendations.`,
-
-  command: `You are the AI Command Center for GE Vernova's eCommerce Intelligence Platform.
-You have access to data from Salesforce Commerce Cloud (SFCC), Google Analytics 4 (GA4), Data Cloud, Einstein AI, and Marketing Cloud.
-Key metrics: $142M quarterly revenue, 3.8% conversion, $4,280 AOV, 62.4% cart abandonment, 1.24M sessions, 150K SKUs.
-Answer questions about revenue, conversion, customer segments, marketing attribution, and eCommerce operations.
-Use proper markdown tables (with | header | and | --- | separator rows) with a blank line before and after. Use bullet points and structured data. Be executive-level concise but data-rich.`,
-};
-
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const { messages, agentId } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
-
-    const systemPrompt = agentSystemPrompts[agentId] || agentSystemPrompts.command;
-
-    const response = await fetch(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
-          messages: [
-            { role: "system", content: systemPrompt },
-            ...messages,
-          ],
-          stream: true,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Usage credits exhausted. Please add credits to continue." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
-      return new Response(
-        JSON.stringify({ error: "AI service error" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    const apiKey = Deno.env.get("LOVABLE_API_KEY");
+    if (!apiKey) {
+      return new Response(JSON.stringify({ error: "AI is not configured for this workspace." }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    return new Response(response.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
-    });
-  } catch (e) {
-    console.error("agent-chat error:", e);
-    return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    const body = (await req.json()) as Body;
+    const messages = Array.isArray(body.messages) ? body.messages.slice(-20) : [];
+    if (messages.length === 0) {
+      return new Response(JSON.stringify({ error: "At least one message is required." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const valid = messages.every(
+      (m) => (m.role === "user" || m.role === "assistant") && typeof m.content === "string" && m.content.length <= 8000,
     );
+    if (!valid) {
+      return new Response(JSON.stringify({ error: "Message payload is invalid." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: MODEL,
+        stream: true,
+        messages: [
+          { role: "system", content: systemPrompt(String(body.persona ?? ""), String(body.context ?? "").slice(0, 12000)) },
+          ...messages,
+        ],
+      }),
+    });
+
+    if (upstream.status === 429) {
+      return new Response(JSON.stringify({ error: "Copilot is rate limited. Please retry in a moment." }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (upstream.status === 402) {
+      return new Response(JSON.stringify({ error: "AI credits are exhausted for this workspace." }), {
+        status: 402,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (!upstream.ok || !upstream.body) {
+      const detail = await upstream.text();
+      console.error("AI gateway error", upstream.status, detail);
+      return new Response(JSON.stringify({ error: "Copilot is unavailable right now." }), {
+        status: 502,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(upstream.body, {
+      headers: { ...corsHeaders, "Content-Type": "text/event-stream", "Cache-Control": "no-cache", Connection: "keep-alive" },
+    });
+  } catch (error) {
+    console.error("agent-chat failure", error);
+    return new Response(JSON.stringify({ error: "Unexpected Copilot error." }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
