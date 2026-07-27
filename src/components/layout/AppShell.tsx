@@ -134,9 +134,9 @@ function ShellInner() {
   }, []);
 
   return (
-    <div className="relative flex h-screen w-full flex-col overflow-hidden bg-background">
+    <div className="relative flex h-screen w-full flex-col overflow-hidden">
       {/* Ambient liquid backdrop */}
-      <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
         <div className="absolute -left-40 -top-40 h-[34rem] w-[34rem] rounded-full bg-primary/20 blur-[120px] animate-float" />
         <div className="absolute -right-32 top-10 h-[30rem] w-[30rem] rounded-full bg-[hsl(var(--primary-glow)/0.18)] blur-[130px] animate-float [animation-delay:-5s]" />
         <div className="absolute bottom-[-14rem] left-1/3 h-[32rem] w-[32rem] rounded-full bg-[hsl(268_62%_60%/0.14)] blur-[140px] animate-float [animation-delay:-9s]" />
