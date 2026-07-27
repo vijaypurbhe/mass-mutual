@@ -1,5 +1,5 @@
 {
   "projects": {
-    "default": "mass-mutual"
+    "default": "mass-mutual-headless"
   }
 }
