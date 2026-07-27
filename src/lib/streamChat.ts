@@ -2,41 +2,56 @@ export type Msg = { role: "user" | "assistant"; content: string };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/agent-chat`;
 
+/** Streams Copilot tokens from the Lovable Cloud edge function (SSE). */
 export async function streamChat({
   messages,
-  agentId,
+  persona,
+  context,
+  signal,
   onDelta,
   onDone,
   onError,
 }: {
   messages: Msg[];
-  agentId: string;
+  persona: string;
+  context: string;
+  signal?: AbortSignal;
   onDelta: (deltaText: string) => void;
   onDone: () => void;
   onError?: (error: string) => void;
 }) {
-  const resp = await fetch(CHAT_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-    },
-    body: JSON.stringify({ messages, agentId }),
-  });
+  let resp: Response;
+  try {
+    resp = await fetch(CHAT_URL, {
+      method: "POST",
+      signal,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify({ messages, persona, context }),
+    });
+  } catch {
+    onError?.("Copilot could not be reached. Check the connection and retry.");
+    onDone();
+    return;
+  }
 
   if (!resp.ok) {
-    let errorMsg = "AI service error";
+    let errorMsg = "Copilot service error";
     try {
       const errData = await resp.json();
       errorMsg = errData.error || errorMsg;
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     onError?.(errorMsg);
     onDone();
     return;
   }
 
   if (!resp.body) {
-    onError?.("No response stream");
+    onError?.("Copilot returned no response stream.");
     onDone();
     return;
   }
@@ -77,12 +92,10 @@ export async function streamChat({
     }
   }
 
-  // Final flush
   if (textBuffer.trim()) {
     for (let raw of textBuffer.split("\n")) {
       if (!raw) continue;
       if (raw.endsWith("\r")) raw = raw.slice(0, -1);
-      if (raw.startsWith(":") || raw.trim() === "") continue;
       if (!raw.startsWith("data: ")) continue;
       const jsonStr = raw.slice(6).trim();
       if (jsonStr === "[DONE]") continue;
@@ -90,7 +103,9 @@ export async function streamChat({
         const parsed = JSON.parse(jsonStr);
         const content = parsed.choices?.[0]?.delta?.content as string | undefined;
         if (content) onDelta(content);
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
   }
 
