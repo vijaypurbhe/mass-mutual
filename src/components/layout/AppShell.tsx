@@ -48,7 +48,7 @@ function InteractionBar() {
   const ss = String(elapsed % 60).padStart(2, "0");
 
   return (
-    <div className="flex flex-wrap items-center gap-3 border-b border-border bg-primary/5 px-4 py-2 text-sm">
+    <div className="glass z-20 flex flex-wrap items-center gap-3 rounded-none border-x-0 border-t-0 bg-primary/[0.07] px-4 py-2 text-sm animate-fade-in">
       <span className="inline-flex items-center gap-2 font-medium text-foreground">
         <PhoneCall className="h-4 w-4 text-primary" aria-hidden="true" />
         {activeInteraction.channel} · {activeInteraction.callerLabel}
